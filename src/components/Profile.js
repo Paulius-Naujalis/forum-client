@@ -1,64 +1,49 @@
 import React, { useContext, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import MainContext from '../context/MainContext';
-import { get } from '../helper/helper';
+import { get, patch } from '../helper/helper';
 
 
 export default function Profile() {
+
     const { user, getUser, setGetUser } = useContext(MainContext);
     const { message, setMessage } = useState('')
+
     const imageRef = useRef()
     const usernameRef = useRef()
     const emailRef = useRef()
-    const oldPasswordRef = useRef()
+    const passwordRef = useRef()
     const newPasswordRef = useRef()
     const rePasswordRef = useRef()
+    const nav = useNavigate()
 
     const updateInfo = async () => {
 
-        // const updateUser = {
-        //     image: imageRef.current.value,
-        //     username: usernameRef.current.value,
-        //     email: emailRef.current.value,
-        //     oldPassword: oldPasswordRef.current.value,
-        //     newPassword: newPasswordRef.current.value,
-        //     rePassword: rePasswordRef.current.value
-        // }
-        const getSingleUser = await get(`profile/${user.secret}`)
-        setGetUser(getSingleUser)
+        const updateUser = {
+            image: imageRef.current.value,
+            username: usernameRef.current.value,
+            email: emailRef.current.value,
+            password: passwordRef.current.value,
+        }
+        const newPass = newPasswordRef.current.value
+        const repeatPass = rePasswordRef.current.value
 
-        // if (updateUser.image === '' || undefined || null) {
-        //     return updateUser.image = getUser.image
-        // }
-        // if (updateUser.username === '' || undefined || null) {
-        //     return updateUser.username === getUser.username
-        // }
-        // if (updateUser.email === '' || undefined || null) {
-        //     return updateUser.email === getUser.email
-        // }
-        // if (updateUser.username === '' || undefined || null) {
-        //     return updateUser.user === getUser.username
-        // }
-        // if (updateUser.oldPassword === '' || undefined || null) {
-        //     return updateUser.oldPassword === getUser.password
-        // }
-        // if (updateUser.newPassword !== '' || undefined || null) {
-        //     return updateUser.newPassword === getUser.password
-        // }
-        // if (updateUser.rePassword !== '' || undefined || null) {
-        //     return updateUser.newPassword === getUser.password
-        // }
-        // if (updateUser.oldPassword === '' && updateUser.newPassword !== '' && updateUser.rePassword !== '') {
-        //     return setMessage('Please enter your old password')
-        // }
-        // if (updateUser.oldPassword !== '' && updateUser.newPassword === '' && updateUser.rePassword === '') {
-        //     return setMessage('Please enter your new password')
-        // }
-        // if (updateUser.oldPassword !== getUser.password) {
-        //     return setMessage('Your old password did not match!')
-        // }
-        // if (updateUser.newPassword !== updateUser.rePassword) {
-        //     return setMessage('New password did not match!')
-        // }
+        if (updateUser.password === '' && newPass !== '' && repeatPass !== '') {
+            return setMessage('To change your password, you must enter your old password!')
+        }
+        if (updateUser.password !== '' && newPass === '' && repeatPass === '') {
+            return setMessage('To change your password, you must enter your new and repeat password!')
+        }
+        if (newPass !== repeatPass) {
+            return setMessage('New password and repeat password did not match!')
+        }
+        else {
+            const secret = window.localStorage.getItem('secret')
+            console.log('secret', JSON.stringify(secret))
+            console.log('updateUser', JSON.stringify(updateUser))
+            await patch(`profile/${secret}`, updateUser)
+            nav(`/profile/${secret}`)
+        }
     }
 
     return (
@@ -87,13 +72,13 @@ export default function Profile() {
                 </div>
 
                 <div className="profile__inputs profile__passwords">
-                    <input ref={oldPasswordRef} type="text" placeholder='Old Password' />
+                    <input ref={passwordRef} type="text" placeholder='Old Password' />
 
                     <input ref={newPasswordRef} type="text" placeholder='New Password' />
 
                     <input ref={rePasswordRef} type="text" placeholder='Repeat Password' />
                 </div>
-                <button className='profile__button'>Update</button>
+                <button onClick={updateInfo} className='profile__button'>Update</button>
             </div>
         </div>
     );

@@ -22,7 +22,7 @@ export default function Login() {
             setMessage(result.message);
             usernameRef.current.value = '';
             passwordRef.current.value = '';
-            window.localStorage.setItem('secret', result.data.secret)
+            window.localStorage.setItem('secret', JSON.stringify(result.data.secret))
             window.localStorage.setItem('isLoggedIn', true)
             nav('/')
         } else {
